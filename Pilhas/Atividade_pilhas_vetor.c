@@ -6,7 +6,6 @@ typedef struct Pilha
 {
     int dados[TAM];
     int topo;
-    int tam;
 } Pilha;
 
 void criar_pilha(Pilha *p)
