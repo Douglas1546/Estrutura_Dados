@@ -25,8 +25,8 @@ NoArv* inserir(NoArv *raiz, int num){
 
 void imprimir(NoArv *raiz){
     if(raiz){
-        printf("%d ", raiz->valor);
         imprimir(raiz->esquerda);
+        printf("%d ", raiz->valor);
         imprimir(raiz->direita);
     }
 }
