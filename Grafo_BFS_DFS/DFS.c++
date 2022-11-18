@@ -93,7 +93,7 @@ int main()
 	printf("\n\n==================================================\n\n");
 
 	cout << "A matriz lida do arquivo tem tamanho: " << l << " x " << c << endl;
-	cout << "Conteudo da matriz no arquivo: " << endl;
+	cout << "Conteudo da matriz do arquivo: " << endl;
 	for (int i = 0; i < l; i++)
 	{
 		for (int j = 0; j < c; j++)
