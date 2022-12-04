@@ -1,302 +1,214 @@
+#define MAX 100
 #include <stdio.h>
 #include <stdlib.h>
 
-struct L_seq{
- int num;
- struct L_seq *prox;
-}; 
-typedef struct L_seq Elem;
+struct aluno{
+    int matricula;
+    char nome[30];
+    float n1,n2,n3;
+};
 
-int tam;
+typedef struct lista Lista;
+Lista* cria_lista();
+void libera_lista(Lista* li);
+int consulta_lista_pos(Lista* li, int pos, struct aluno *al);
+int consulta_lista_mat(Lista* li, int mat, struct aluno *al);
+int insere_lista_final(Lista* li, struct aluno al);
+int insere_lista_inicio(Lista* li, struct aluno al);
+int insere_lista_ordenada(Lista* li, struct aluno al);
+int remove_lista(Lista* li, int mat);
+int remove_lista_inicio(Lista* li);
+int remove_lista_final(Lista* li);
+int tamanho_lista(Lista* li);
+int lista_cheia(Lista* li);
+int lista_vazia(Lista* li);
+void imprime_lista(Lista* li);
 
-void inicia(Elem *LISTA);
-int menu(void);
-void opcao(Elem *LISTA, int op);
-Elem *criaNo();
-void insereFim(Elem *LISTA);
-void insereInicio(Elem *LISTA);
-void exibe(Elem *LISTA);
-void libera(Elem *LISTA);
-void insere (Elem *LISTA);
-Elem *retiraInicio(Elem *LISTA);
-Elem *retiraFim(Elem *LISTA);
-Elem *retira(Elem *LISTA);
+int remove_lista_otimizado(Lista* li, int mat);
 
 
-int main(void)
-{
- Elem *LISTA = (Elem *) malloc(sizeof(Elem));
- if(!LISTA){
-  printf("Sem memoria disponivel!\n");
-  exit(1);
- }else{
- inicia(LISTA);
- int opt;
- 
- do{
-  opt=menu();
-  opcao(LISTA,opt);
- }while(opt);
+struct lista{
+    int qtd;
+    struct aluno dados[MAX];
+};
 
- free(LISTA);
- return 0;
- }
+Lista* cria_lista(){
+    Lista *li;
+    li = (Lista*) malloc(sizeof(struct lista));
+    if(li != NULL)
+        li->qtd = 0;
+    return li;
 }
 
-void inicia(Elem *LISTA)
-{
- LISTA->prox = NULL;
- tam=0;
+void libera_lista(Lista* li){
+    free(li);
 }
 
-int menu(void)
-{
- int opt;
- 
- printf("\n----Escolha uma opcao----\n\n");
- printf("0. Sair\n");
- printf("1. Zerar lista\n");
- printf("2. Exibir lista\n");
- printf("3. Adicionar elemnto no inicio\n");
- printf("4. Adicionar elemento no final\n");
- printf("5. Escolher onde inserir\n");
- printf("6. Retirar elemento do inicio\n");
- printf("7. Retirar elemento do fim\n");
- printf("8. Escolher de onde tirar\n");
- printf("\nOpcao: "); scanf("%d", &opt);
- 
- return opt;
+int consulta_lista_pos(Lista* li, int pos, struct aluno *al){
+    if(li == NULL || pos <= 0 ||  pos > li->qtd)
+        return 0;
+    *al = li->dados[pos-1];
+    return 1;
 }
 
-void opcao(Elem *LISTA, int op)
-{
- Elem *tmp;
- switch(op){
-  case 0:
-   libera(LISTA);
-   break;
-   
-  case 1:
-   libera(LISTA);
-   inicia(LISTA);
-   break;
-  
-  case 2:
-   exibe(LISTA);
-   break;
-  
-  case 3:
-   insereInicio(LISTA);
-   break;  
-   
-  case 4:
-   insereFim(LISTA);
-   break;
-   
-  case 5:
-   insere(LISTA);
-   break;
-  
-  case 6:
-   tmp= retiraInicio(LISTA);
-   printf("Retirado: %3d\n\n", tmp->num);
-   break;
-   
-  case 7:
-   tmp= retiraFim(LISTA);
-   printf("Retirado: %3d\n\n", tmp->num);
-   break;
-  
-  case 8:
-   tmp= retira(LISTA);
-   printf("Retirado: %3d\n\n", tmp->num);
-   break;
-  
-  default:
-   printf("Comando invalido\n\n");
- }
+int consulta_lista_mat(Lista* li, int mat, struct aluno *al){
+    if(li == NULL)
+        return 0;
+    int i = 0;
+    while(i<li->qtd && li->dados[i].matricula != mat)
+        i++;
+    if(i == li->qtd)//elemento nao encontrado
+        return 0;
+
+    *al = li->dados[i];
+    return 1;
 }
 
-int vazia(Elem *LISTA)
-{
- if(LISTA->prox == NULL)
-  return 1;
- else
-  return 0;
+int insere_lista_final(Lista* li, struct aluno al){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == MAX)//lista cheia
+        return 0;
+    li->dados[li->qtd] = al;
+    li->qtd++;
+    return 1;
 }
 
-Elem *aloca()
-{
- Elem *novo=(Elem *) malloc(sizeof(Elem));
- if(!novo){
-  printf("Sem memoria disponivel!\n");
-  exit(1);
- }else{
-  printf("Novo elemento: "); scanf("%d", &novo->num);
-  return novo;
- }
+int insere_lista_inicio(Lista* li, struct aluno al){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == MAX)//lista cheia
+        return 0;
+    int i;
+    for(i=li->qtd-1; i>=0; i--)
+        li->dados[i+1] = li->dados[i];
+    li->dados[0] = al;
+    li->qtd++;
+    return 1;
 }
 
+int insere_lista_ordenada(Lista* li, struct aluno al){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == MAX)//lista cheia
+        return 0;
+    int k,i = 0;
+    while(i<li->qtd && li->dados[i].matricula < al.matricula)
+        i++;
 
-void insereFim(Elem *LISTA)
-{
- Elem *novo=aloca();
- novo->prox = NULL;
- 
- if(vazia(LISTA))
-  LISTA->prox=novo;
- else{
-  Elem *tmp = LISTA->prox;
-  
-  while(tmp->prox != NULL)
-   tmp = tmp->prox;
-  
-  tmp->prox = novo;
- }
- tam++;
+    for(k=li->qtd-1; k >= i; k--)
+        li->dados[k+1] = li->dados[k];
+
+    li->dados[i] = al;
+    li->qtd++;
+    return 1;
 }
 
-void insereInicio(Elem *LISTA)
-{
- Elem *novo=aloca(); 
- Elem *oldHead = LISTA->prox;
- 
- LISTA->prox = novo;
- novo->prox = oldHead;
- 
- tam++;
+int remove_lista(Lista* li, int mat){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == 0)
+        return 0;
+    int k,i = 0;
+    while(i<li->qtd && li->dados[i].matricula != mat)
+        i++;
+    if(i == li->qtd)//elemento nao encontrado
+        return 0;
+
+    for(k=i; k< li->qtd-1; k++)
+        li->dados[k] = li->dados[k+1];
+    li->qtd--;
+    return 1;
 }
 
-void exibe(Elem *LISTA)
-{
- system("clear");
- if(vazia(LISTA)){
-  printf("\n\nLista vazia!\n\n");
-  return ;
- }
- 
- Elem *tmp;
- tmp = LISTA->prox;
- printf("Lista:");
- while( tmp != NULL){
-  printf("%5d", tmp->num);
-  tmp = tmp->prox;
- }
- printf("\n        ");
- int count;
- for(count=0 ; count < tam ; count++)
-  printf("  ^  ");
- printf("\nOrdem:");
- for(count=0 ; count < tam ; count++)
-  printf("%5d", count+1);
- 
-  
- printf("\n\n");
+int remove_lista_otimizado(Lista* li, int mat){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == 0)
+        return 0;
+    int i = 0;
+    while(i<li->qtd && li->dados[i].matricula != mat)
+        i++;
+    if(i == li->qtd)//elemento nao encontrado
+        return 0;
+
+    li->qtd--;
+    li->dados[i] = li->dados[li->qtd];
+    return 1;
 }
 
-void libera(Elem *LISTA)
-{
- if(!vazia(LISTA)){
-  Elem *proxNode,
-     *atual;
-  
-  atual = LISTA->prox;
-  while(atual != NULL){
-   proxNode = atual->prox;
-   free(atual);
-   atual = proxNode;
-  }
- }
+int remove_lista_inicio(Lista* li){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == 0)
+        return 0;
+    int k = 0;
+    for(k=0; k< li->qtd-1; k++)
+        li->dados[k] = li->dados[k+1];
+    li->qtd--;
+    return 1;
 }
 
-void insere(Elem *LISTA)
-{
- int pos,
-  count;
- printf("Em que posicao, [de 1 ate %d] voce deseja inserir: ", tam);
- scanf("%d", &pos);
- 
- if(pos>0 && pos <= tam){
-  if(pos==1)
-   insereInicio(LISTA);
-  else{
-   Elem *atual = LISTA->prox,
-     *anterior=LISTA; 
-   Elem *novo=aloca();
-     
-   for(count=1 ; count < pos ; count++){
-     anterior=atual;
-     atual=atual->prox;
-   }
-   anterior->prox=novo;
-   novo->prox = atual;
-   tam++;
-  }
-   
- }else
-  printf("Elemento invalido\n\n");  
+int remove_lista_final(Lista* li){
+    if(li == NULL)
+        return 0;
+    if(li->qtd == 0)
+        return 0;
+    li->qtd--;
+    return 1;
 }
 
-Elem *retiraInicio(Elem *LISTA)
-{
- if(LISTA->prox == NULL){
-  printf("Lista ja esta vazia\n");
-  return NULL;
- }else{
-  Elem *tmp = LISTA->prox;
-  LISTA->prox = tmp->prox;
-  tam--;
-  return tmp;
- }
-    
+int tamanho_lista(Lista* li){
+    if(li == NULL)
+        return -1;
+    else
+        return li->qtd;
 }
 
-Elem *retiraFim(Elem *LISTA)
-{
- if(LISTA->prox == NULL){
-  printf("Lista ja vazia\n\n");
-  return NULL;
- }else{
-  Elem *ultimo = LISTA->prox,
-    *penultimo = LISTA;
-    
-  while(ultimo->prox != NULL){
-   penultimo = ultimo;
-   ultimo = ultimo->prox;
-  }
-    
-  penultimo->prox = NULL;
-  tam--;
-  return ultimo;  
- }
+int lista_cheia(Lista* li){
+    if(li == NULL)
+        return -1;
+    return (li->qtd == MAX);
 }
 
-Elem *retira(Elem *LISTA)
-{
- int opt,
-  count;
- printf("Que posicao, [de 1 ate %d] voce deseja retirar: ", tam);
- scanf("%d", &opt);
- 
- if(opt>0 && opt <= tam){
-  if(opt==1)
-   return retiraInicio(LISTA);
-  else{
-   Elem *atual = LISTA->prox,
-     *anterior=LISTA; 
-     
-   for(count=1 ; count < opt ; count++){
-    anterior=atual;
-    atual=atual->prox;
-   }
-   
-  anterior->prox=atual->prox;
-  tam--;
-  return atual;
-  }
-   
- }else{
-  printf("Elemento invalido\n\n");
-  return NULL;
- }
+int lista_vazia(Lista* li){
+    if(li == NULL)
+        return -1;
+    return (li->qtd == 0);
 }
+
+void imprime_lista(Lista* li){
+    if(li == NULL)
+        return;
+    int i;
+    for(i=0; i< li->qtd; i++){
+        printf("Matricula: %d\n",li->dados[i].matricula);
+        printf("Nome: %s\n",li->dados[i].nome);
+        printf("Notas: %f %f %f\n",li->dados[i].n1,li->dados[i].n2,li->dados[i].n3);
+        printf("-------------------------------\n");
+    }
+}
+
+int main(){
+    struct aluno a[4] = {{2,"Douglas",9.5,7.8,8.5},{4,"Daniel",7.5,8.7,6.8},{1,"Deyse",9.7,6.7,8.4},{3,"Ana",5.7,6.1,7.4}};
+    Lista* li = cria_lista();
+    int i;
+    for(i=0; i < 4; i++)
+        insere_lista_ordenada(li,a[i]);
+
+    imprime_lista(li);
+    printf("\n\n\n\n");
+
+    for(i=0; i < 5; i++){
+        if (!remove_lista_otimizado(li,i))
+            printf("Erro\n");
+
+        imprime_lista(li);
+        printf("\n\n\n\n");
+    }
+
+    libera_lista(li);
+    system("pause");
+    return 0;
+}
+
